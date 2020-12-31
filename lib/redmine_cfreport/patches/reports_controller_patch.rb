@@ -41,7 +41,7 @@ module RedmineCFReport
             end
         end
 
-        def cf_values(cf)
+        def cf_values(cf, options)
           case cf.field_format
           when 'enumeration'
             CustomFieldEnumeration.where(custom_field_id: cf.id, active: true).order(:position)
@@ -52,13 +52,19 @@ module RedmineCFReport
               OpenStruct.new({id:1, name:l(:general_text_yes)}),
               OpenStruct.new({id:0, name:l(:general_text_no)})
             ]
+          when 'string'
+            Issue.
+              visible(User.current, :project => options[:project], :with_subprojects => options[:with_subprojects]).
+              joins(:custom_values).map {|i| i.custom_values.find_by(custom_field_id: cf.id)&.value}.
+              compact.reject {|c| c.empty?}.uniq.sort.
+              map {|v| OpenStruct.new({id:v, name:v})}
           else
             # TODO:
           end
         end
 
         def cfreport_data(cf, options)
-          rows = cf_values(cf)
+          rows = cf_values(cf, options)
           data = count_and_group_by_cf(cf, options)
 
           if cf.field_format == 'enumeration'
@@ -78,7 +84,7 @@ module RedmineCFReport
         def issue_report_with_cfreport
           with_subprojects = Setting.display_subprojects_issues?
 
-          supported_field_format = ['enumeration', 'list', 'bool']
+          supported_field_format = ['enumeration', 'list', 'bool', 'string']
 
           @custom_fields = @project.issue_custom_fields.where(field_format: supported_field_format)
           @custom_field_values = {}
