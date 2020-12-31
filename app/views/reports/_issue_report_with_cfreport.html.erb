@@ -1,0 +1,12 @@
+
+<% @custom_fields.each do |cf| %>
+  <h3>
+    <%= cf.name %>&nbsp;
+    <%= link_to l(:label_details),
+          project_issues_report_details_path(@project, :detail => "cf_#{cf.id}"),
+          :class => 'icon-only icon-zoom-in',
+          :title => l(:label_details) %>
+  </h3>
+  <%= render :partial => 'simple', :locals => { :data => @issues_by_custom_field[cf.id], :field_name => "cf_#{cf.id}", :rows => @custom_field_values[cf.id] } %>
+  <br />
+<% end %>
