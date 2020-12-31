@@ -65,6 +65,8 @@ module RedmineCFReport
 
         def cfreport_data(cf, options)
           rows = cf_values(cf, options)
+          return [nil, nil] if rows.nil?
+
           data = count_and_group_by_cf(cf, options)
 
           if cf.field_format == 'enumeration'
@@ -86,12 +88,21 @@ module RedmineCFReport
 
           supported_field_format = ['enumeration', 'list', 'bool', 'string']
 
-          @custom_fields = @project.issue_custom_fields.where(field_format: supported_field_format)
+          @custom_fields = CustomField.where(type: :IssueCustomField, is_for_all: true, field_format: supported_field_format)
+          @custom_fields += @project.issue_custom_fields.where(field_format: supported_field_format)
+          @custom_fields = @custom_fields.uniq.sort_by {|c| c.position}
           @custom_field_values = {}
           @issues_by_custom_field = {}
 
           @custom_fields.each do |cf|
-            @custom_field_values[cf.id], @issues_by_custom_field[cf.id] = cfreport_data(cf, project: @project, with_subprojects: with_subprojects)
+            rows, data = cfreport_data(cf, project: @project, with_subprojects: with_subprojects)
+            if rows.nil?
+              @custom_fields = @custom_fields.reject {|c| c.id == cf.id}
+              next
+            end
+
+            @custom_field_values[cf.id] = rows
+            @issues_by_custom_field[cf.id] = data
           end
 
           issue_report_without_cfreport
