@@ -55,8 +55,8 @@ module RedmineCFReport
           when 'string'
             Issue.
               visible(User.current, :project => options[:project], :with_subprojects => options[:with_subprojects]).
-              joins(:custom_values).map {|i| i.custom_values.find_by(custom_field_id: cf.id)&.value}.
-              compact.reject {|c| c.empty?}.uniq.sort.
+              includes(:custom_values).where(custom_values: {custom_field_id: cf.id}).
+              map {|i| i.custom_values.first.value}.reject {|c| c.blank?}.uniq.sort.
               map {|v| OpenStruct.new({id:v, name:v})}
           else
             # TODO:
