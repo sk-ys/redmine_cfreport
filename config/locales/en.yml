@@ -1,3 +1,6 @@
 # English strings go here for Rails i18n
 en:
-  # my_label: "My label"
+  cfreport: 'CFReport'
+  filtering: 'enable filtering'
+  left_items: 'left items'
+  right_items: 'right items'

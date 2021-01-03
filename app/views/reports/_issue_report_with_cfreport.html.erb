@@ -1,5 +1,7 @@
 
-<% @custom_fields.each do |cf| %>
+<% @custom_fields = side == 'left' ? @custom_fields_left : @custom_fields_right %>
+
+<% @custom_fields&.each do |cf| %>
   <h3>
     <%= cf.name %>&nbsp;
     <%= link_to l(:label_details),
