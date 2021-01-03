@@ -86,18 +86,31 @@ module RedmineCFReport
         def issue_report_with_cfreport
           with_subprojects = Setting.display_subprojects_issues?
 
-          supported_field_format = ['enumeration', 'list', 'bool', 'string']
+          p RedmineCFReport.settings
 
-          @custom_fields = CustomField.where(type: :IssueCustomField, is_for_all: true, field_format: supported_field_format)
-          @custom_fields += @project.issue_custom_fields.where(field_format: supported_field_format)
-          @custom_fields = @custom_fields.uniq.sort_by {|c| c.position}
+          supported_field_format = RedmineCFReport.settings[:supported_field_format]
+
+          custom_fields_all = CustomField.where(type: :IssueCustomField, is_for_all: true, field_format: supported_field_format)
+          custom_fields_all += @project.issue_custom_fields.where(field_format: supported_field_format)
+          custom_fields_all = custom_fields_all.uniq.sort_by {|c| c.position}
+
+          if RedmineCFReport.settings[:filtering].to_i == 1
+            @custom_fields_left = custom_fields_all.filter {|cf| RedmineCFReport.settings[:left_items].include?(cf.id.to_s)}
+            @custom_fields_right = custom_fields_all.filter {|cf| RedmineCFReport.settings[:right_items].include?(cf.id.to_s)}
+            custom_fields_all = @custom_fields_left + @custom_fields_right
+          else
+            @custom_fields_left = custom_fields_all
+            @custom_fields_right = []
+          end
+
           @custom_field_values = {}
           @issues_by_custom_field = {}
 
-          @custom_fields.each do |cf|
+          custom_fields_all.each do |cf|
             rows, data = cfreport_data(cf, project: @project, with_subprojects: with_subprojects)
             if rows.nil?
-              @custom_fields = @custom_fields.reject {|c| c.id == cf.id}
+              @custom_fields_left = @custom_fields_left.reject {|c| c.id == cf.id}
+              @custom_fields_right = @custom_fields_right.reject {|c| c.id == cf.id}
               next
             end
 

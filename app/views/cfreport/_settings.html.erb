@@ -1,0 +1,46 @@
+<%
+  @settings = ActionController::Parameters.new(@settings)
+  @all_items = CustomField.where(field_format: @settings[:supported_field_format]).sort
+%>
+
+<% html_title l(:label_settings), l(:cfreport) %>
+
+<% @settings[:supported_field_format].each do |item| %>
+  <%= hidden_field_tag 'settings[supported_field_format][]', item %>
+<% end %>
+
+<p>
+  <%= label_tag 'settings[filtering]', l(:filtering) %>
+  <%= hidden_field_tag 'settings[filtering]', 0 %>
+  <%= check_box_tag 'settings[filtering]', 1, @settings[:filtering].to_i == 1 %>
+</p>
+<p>
+  <%= label_tag 'settings[left_items]', l(:left_items) %>
+  <%= select_tag 'settings[left_items][]',
+    options_for_select(
+      @all_items.map {|cf| ["cf_#{cf.id}: #{cf.name}", cf.id]},
+      @settings[:left_items]),
+    multiple: true, size: 10, style: 'max-width: 100%;' %>
+</p>
+<p>
+  <%= label_tag 'settings[right_items]', l(:right_items) %>
+  <%= select_tag 'settings[right_items][]',
+    options_for_select(
+      @all_items.map {|cf| ["cf_#{cf.id}: #{cf.name}", cf.id]},
+      @settings[:right_items]),
+    multiple: true, size: 10, style: 'max-width: 100%;'%>
+</p>
+
+<script>
+  $(function(){
+    var $check_box_filtering = $('#settings_filtering[type=checkbox]');
+    var set_state = function () {
+      var state = !$check_box_filtering.prop('checked');
+      $('#settings_left_items_').prop('disabled', state);
+      $('#settings_right_items_').prop('disabled', state);
+    }
+    $check_box_filtering.click(set_state);
+
+    set_state();
+  });
+</script>
