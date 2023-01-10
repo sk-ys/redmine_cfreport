@@ -1,6 +1,6 @@
 require 'ostruct'
 
-module RedmineCFReport
+module RedmineCfreport
   module Patches
     module ReportsControllerPatch
       def self.included(base)
@@ -86,17 +86,17 @@ module RedmineCFReport
         def issue_report_with_cfreport
           with_subprojects = Setting.display_subprojects_issues?
 
-          p RedmineCFReport.settings
+          p RedmineCfreport.settings
 
-          supported_field_format = RedmineCFReport.settings[:supported_field_format]
+          supported_field_format = RedmineCfreport.settings[:supported_field_format]
 
           custom_fields_all = CustomField.where(type: :IssueCustomField, is_for_all: true, field_format: supported_field_format)
           custom_fields_all += @project.issue_custom_fields.where(field_format: supported_field_format)
           custom_fields_all = custom_fields_all.uniq.sort_by {|c| c.position}
 
-          if RedmineCFReport.settings[:filtering].to_i == 1
-            @custom_fields_left = custom_fields_all.filter {|cf| RedmineCFReport.settings[:left_items].include?(cf.id.to_s)}
-            @custom_fields_right = custom_fields_all.filter {|cf| RedmineCFReport.settings[:right_items].include?(cf.id.to_s)}
+          if RedmineCfreport.settings[:filtering].to_i == 1
+            @custom_fields_left = custom_fields_all.filter {|cf| RedmineCfreport.settings[:left_items].include?(cf.id.to_s)}
+            @custom_fields_right = custom_fields_all.filter {|cf| RedmineCfreport.settings[:right_items].include?(cf.id.to_s)}
             custom_fields_all = @custom_fields_left + @custom_fields_right
           else
             @custom_fields_left = custom_fields_all
@@ -141,5 +141,5 @@ module RedmineCFReport
 end
 
 base = ReportsController
-patch = RedmineCFReport::Patches::ReportsControllerPatch
+patch = RedmineCfreport::Patches::ReportsControllerPatch
 base.send(:include, patch) unless base.included_modules.include?(patch)

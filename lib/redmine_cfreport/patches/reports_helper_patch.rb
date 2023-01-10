@@ -1,4 +1,4 @@
-module RedmineCFReport
+module RedmineCfreport
   module Patches
     module ReportsHelperPatch
       def self.included(base)
@@ -26,5 +26,5 @@ module RedmineCFReport
 end
 
 base = ReportsHelper
-patch = RedmineCFReport::Patches::ReportsHelperPatch
+patch = RedmineCfreport::Patches::ReportsHelperPatch
 base.send(:include, patch) unless base.included_modules.include?(patch)
